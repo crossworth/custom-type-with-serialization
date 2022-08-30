@@ -4,6 +4,7 @@ package user
 
 import (
 	"entgo.io/bug/ent/predicate"
+	"entgo.io/bug/types"
 	"entgo.io/ent/dialect/sql"
 )
 
@@ -101,6 +102,13 @@ func Age(v int) predicate.User {
 func Name(v string) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldName), v))
+	})
+}
+
+// Content applies equality check predicate on the "content" field. It's identical to ContentEQ.
+func Content(v types.SafeString) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldContent), v))
 	})
 }
 
@@ -288,6 +296,82 @@ func NameEqualFold(v string) predicate.User {
 func NameContainsFold(v string) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldName), v))
+	})
+}
+
+// ContentEQ applies the EQ predicate on the "content" field.
+func ContentEQ(v types.SafeString) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldContent), v))
+	})
+}
+
+// ContentNEQ applies the NEQ predicate on the "content" field.
+func ContentNEQ(v types.SafeString) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldContent), v))
+	})
+}
+
+// ContentIn applies the In predicate on the "content" field.
+func ContentIn(vs ...types.SafeString) predicate.User {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.User(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldContent), v...))
+	})
+}
+
+// ContentNotIn applies the NotIn predicate on the "content" field.
+func ContentNotIn(vs ...types.SafeString) predicate.User {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.User(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldContent), v...))
+	})
+}
+
+// ContentGT applies the GT predicate on the "content" field.
+func ContentGT(v types.SafeString) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldContent), v))
+	})
+}
+
+// ContentGTE applies the GTE predicate on the "content" field.
+func ContentGTE(v types.SafeString) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldContent), v))
+	})
+}
+
+// ContentLT applies the LT predicate on the "content" field.
+func ContentLT(v types.SafeString) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldContent), v))
+	})
+}
+
+// ContentLTE applies the LTE predicate on the "content" field.
+func ContentLTE(v types.SafeString) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldContent), v))
 	})
 }
 

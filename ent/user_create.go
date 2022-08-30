@@ -8,6 +8,7 @@ import (
 	"fmt"
 
 	"entgo.io/bug/ent/user"
+	"entgo.io/bug/types"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
@@ -28,6 +29,12 @@ func (uc *UserCreate) SetAge(i int) *UserCreate {
 // SetName sets the "name" field.
 func (uc *UserCreate) SetName(s string) *UserCreate {
 	uc.mutation.SetName(s)
+	return uc
+}
+
+// SetContent sets the "content" field.
+func (uc *UserCreate) SetContent(ts types.SafeString) *UserCreate {
+	uc.mutation.SetContent(ts)
 	return uc
 }
 
@@ -107,6 +114,9 @@ func (uc *UserCreate) check() error {
 	if _, ok := uc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "User.name"`)}
 	}
+	if _, ok := uc.mutation.Content(); !ok {
+		return &ValidationError{Name: "content", err: errors.New(`ent: missing required field "User.content"`)}
+	}
 	return nil
 }
 
@@ -149,6 +159,14 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Column: user.FieldName,
 		})
 		_node.Name = value
+	}
+	if value, ok := uc.mutation.Content(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeOther,
+			Value:  value,
+			Column: user.FieldContent,
+		})
+		_node.Content = value
 	}
 	return _node, _spec
 }

@@ -9,6 +9,7 @@ import (
 
 	"entgo.io/bug/ent/predicate"
 	"entgo.io/bug/ent/user"
+	"entgo.io/bug/types"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -43,6 +44,12 @@ func (uu *UserUpdate) AddAge(i int) *UserUpdate {
 // SetName sets the "name" field.
 func (uu *UserUpdate) SetName(s string) *UserUpdate {
 	uu.mutation.SetName(s)
+	return uu
+}
+
+// SetContent sets the "content" field.
+func (uu *UserUpdate) SetContent(ts types.SafeString) *UserUpdate {
+	uu.mutation.SetContent(ts)
 	return uu
 }
 
@@ -144,6 +151,13 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: user.FieldName,
 		})
 	}
+	if value, ok := uu.mutation.Content(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeOther,
+			Value:  value,
+			Column: user.FieldContent,
+		})
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, uu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
@@ -179,6 +193,12 @@ func (uuo *UserUpdateOne) AddAge(i int) *UserUpdateOne {
 // SetName sets the "name" field.
 func (uuo *UserUpdateOne) SetName(s string) *UserUpdateOne {
 	uuo.mutation.SetName(s)
+	return uuo
+}
+
+// SetContent sets the "content" field.
+func (uuo *UserUpdateOne) SetContent(ts types.SafeString) *UserUpdateOne {
+	uuo.mutation.SetContent(ts)
 	return uuo
 }
 
@@ -302,6 +322,13 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Type:   field.TypeString,
 			Value:  value,
 			Column: user.FieldName,
+		})
+	}
+	if value, ok := uuo.mutation.Content(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeOther,
+			Value:  value,
+			Column: user.FieldContent,
 		})
 	}
 	_node = &User{config: uuo.config}

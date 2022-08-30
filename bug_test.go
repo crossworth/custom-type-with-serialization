@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"testing"
 
+	"entgo.io/bug/ent/user"
 	"entgo.io/ent/dialect"
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
@@ -57,8 +58,39 @@ func TestBugMaria(t *testing.T) {
 func test(t *testing.T, client *ent.Client) {
 	ctx := context.Background()
 	client.User.Delete().ExecX(ctx)
-	client.User.Create().SetName("Ariel").SetAge(30).ExecX(ctx)
-	if n := client.User.Query().CountX(ctx); n != 1 {
-		t.Errorf("unexpected number of users: %d", n)
-	}
+
+	t.Run("custom type solution", func(t *testing.T) {
+		r := client.User.Create().
+			SetName("Ariel").
+			SetContent(`<a onblur="alert(secret)" href="http://www.google.com">Google</a>`).
+			SetAge(30).
+			SaveX(ctx)
+
+		// content returned from Save/SaveX
+		fmt.Println(r.Content) // <a onblur="alert(secret)" href="http://www.google.com">Google</a>
+
+		// content save
+		r = client.User.Query().Where(user.Name("Ariel")).OnlyX(ctx)
+		fmt.Println(r.Content) // <a href="http://www.google.com" rel="nofollow">Google</a>
+	})
+
+	t.Run("hook solution", func(t *testing.T) {
+		p := client.Post.Create().SetTitle(`<a onblur="alert(secret)" href="http://www.google.com">Google</a>`).SaveX(ctx)
+
+		fmt.Println(p.Title) // <a href="http://www.google.com" rel="nofollow">Google</a>
+
+		p = client.Post.Query().FirstX(ctx)
+		fmt.Println(p.Title) // <a href="http://www.google.com" rel="nofollow">Google</a>
+
+		p = client.Post.UpdateOne(p).SetTitle(`<a onblur="alert(secret)" href="http://www.google.com">Google</a>`).SaveX(ctx)
+		fmt.Println(p.Title) // <a href="http://www.google.com" rel="nofollow">Google</a>
+
+		p = client.Post.Query().FirstX(ctx)
+		fmt.Println(p.Title) // <a href="http://www.google.com" rel="nofollow">Google</a>
+
+		client.Post.Update().SetTitle(`<a onblur="alert(secret)" href="http://www.google.com">Google</a>`).ExecX(ctx)
+
+		p = client.Post.Query().FirstX(ctx)
+		fmt.Println(p.Title) // <a href="http://www.google.com" rel="nofollow">Google</a>
+	})
 }

@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"entgo.io/bug/ent/user"
+	"entgo.io/bug/types"
 	"entgo.io/ent/dialect/sql"
 )
 
@@ -19,6 +20,8 @@ type User struct {
 	Age int `json:"age,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
+	// Content holds the value of the "content" field.
+	Content types.SafeString `json:"content,omitempty"`
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -30,6 +33,8 @@ func (*User) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new(sql.NullInt64)
 		case user.FieldName:
 			values[i] = new(sql.NullString)
+		case user.FieldContent:
+			values[i] = new(types.SafeString)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type User", columns[i])
 		}
@@ -63,6 +68,12 @@ func (u *User) assignValues(columns []string, values []interface{}) error {
 			} else if value.Valid {
 				u.Name = value.String
 			}
+		case user.FieldContent:
+			if value, ok := values[i].(*types.SafeString); !ok {
+				return fmt.Errorf("unexpected type %T for field content", values[i])
+			} else if value != nil {
+				u.Content = *value
+			}
 		}
 	}
 	return nil
@@ -95,6 +106,8 @@ func (u *User) String() string {
 	builder.WriteString(fmt.Sprintf("%v", u.Age))
 	builder.WriteString(", name=")
 	builder.WriteString(u.Name)
+	builder.WriteString(", content=")
+	builder.WriteString(fmt.Sprintf("%v", u.Content))
 	builder.WriteByte(')')
 	return builder.String()
 }
